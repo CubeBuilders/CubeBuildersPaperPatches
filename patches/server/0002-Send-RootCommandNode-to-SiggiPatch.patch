@@ -1,0 +1,22 @@
+From 2909bd6678f1292ad757372e29e6ba0bb427a9c8 Mon Sep 17 00:00:00 2001
+From: Siggi <7286178+Siggi88@users.noreply.github.com>
+Date: Wed, 22 Feb 2023 20:53:37 +0000
+Subject: [PATCH] Send RootCommandNode to SiggiPatch
+
+
+diff --git a/src/main/java/net/minecraft/commands/Commands.java b/src/main/java/net/minecraft/commands/Commands.java
+index e92864ecf..b0fefda89 100644
+--- a/src/main/java/net/minecraft/commands/Commands.java
++++ b/src/main/java/net/minecraft/commands/Commands.java
+@@ -434,6 +434,8 @@ public class Commands {
+         map.put(this.dispatcher.getRoot(), rootcommandnode);
+         this.fillUsableCommands(this.dispatcher.getRoot(), rootcommandnode, player.createCommandSourceStack(), map);
+ 
++        io.siggi.mcserverpatch.SiggiPatch.postProcessRootCommandNode(rootcommandnode); // SiggiPatch
++
+         Collection<String> bukkit = new LinkedHashSet<>();
+         for (CommandNode node : rootcommandnode.getChildren()) {
+             bukkit.add(node.getName());
+-- 
+2.37.1 (Apple Git-137.1)
+

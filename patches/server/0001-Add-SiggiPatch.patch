@@ -1,0 +1,62 @@
+From 1eb33bc50dcdc0bc0cf01c56da77855e23f63405 Mon Sep 17 00:00:00 2001
+From: Siggi <7286178+Siggi88@users.noreply.github.com>
+Date: Wed, 22 Feb 2023 20:50:55 +0000
+Subject: [PATCH] Add SiggiPatch
+
+
+diff --git a/src/main/java/io/siggi/mcserverpatch/SiggiPatch.java b/src/main/java/io/siggi/mcserverpatch/SiggiPatch.java
+new file mode 100644
+index 000000000..6fc35c1da
+--- /dev/null
++++ b/src/main/java/io/siggi/mcserverpatch/SiggiPatch.java
+@@ -0,0 +1,47 @@
++package io.siggi.mcserverpatch;
++
++import com.mojang.brigadier.tree.RootCommandNode;
++import java.lang.reflect.Method;
++import java.util.function.Consumer;
++import org.bukkit.Bukkit;
++import org.bukkit.plugin.Plugin;
++
++public class SiggiPatch {
++    private static Object pluginServerWatcher = null;
++    private static Method sendLong = null;
++
++    public static void reportTickLength(long tickStart, long tickEnd) {
++        try {
++            if (sendLong == null) {
++                pluginServerWatcher = Bukkit.getServer().getPluginManager().getPlugin("ServerWatcherClient");
++                if (pluginServerWatcher != null) {
++                    Class cc = pluginServerWatcher.getClass();
++                    try {
++                        sendLong = cc.getDeclaredMethod("sendLong", String.class, long.class);
++                    } catch (NoSuchMethodException e) {
++                        return;
++                    }
++                } else {
++                    return;
++                }
++            }
++            sendLong.invoke(pluginServerWatcher, "ticklength", tickEnd - tickStart);
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++
++    public static void setRootCommandNodePostProcessor(Consumer<RootCommandNode> processor) {
++        rootCommandNodePostProcessor = processor;
++    }
++
++    private static Consumer<RootCommandNode> rootCommandNodePostProcessor = null;
++    private static Method postProcessRootCommandNode = null;
++    private static Object postProcessRootCommandNodeObject = null;
++
++    public static void postProcessRootCommandNode(RootCommandNode rootCommandNode) {
++        if (rootCommandNodePostProcessor != null) {
++            rootCommandNodePostProcessor.accept(rootCommandNode);
++        }
++    }
++}
+-- 
+2.37.1 (Apple Git-137.1)
+

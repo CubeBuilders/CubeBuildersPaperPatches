@@ -1,0 +1,67 @@
+From 85ffbc9bda3bf21a7cbb93e1ef142ded3bc7507c Mon Sep 17 00:00:00 2001
+From: Siggi <7286178+Siggi88@users.noreply.github.com>
+Date: Wed, 22 Feb 2023 20:55:04 +0000
+Subject: [PATCH] Xbox Live Enforcement Team? Who's that?
+
+
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+index 9160725f0..6196549a5 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+@@ -2011,7 +2011,7 @@ public class ServerPlayer extends Player {
+     }
+ 
+     public void sendServerStatus(ServerStatus metadata) {
+-        this.connection.send(new ClientboundServerDataPacket(metadata.getDescription(), metadata.getFavicon(), metadata.enforcesSecureChat()));
++        this.connection.send(new ClientboundServerDataPacket(metadata.getDescription(), metadata.getFavicon(), true));
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 9b0b42add..26262ad24 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -2140,6 +2140,14 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+ 
+     @Override
+     public void send(Packet<?> packet) {
++        if (packet instanceof ClientboundDisguisedChatPacket) {
++            return;
++        }
++        if (packet instanceof ClientboundPlayerChatPacket chat) {
++            packet = new ClientboundSystemChatPacket(chat.chatType().resolve(this.player.level.registryAccess())
++                .get().decorate(chat.unsignedContent() != null ? chat.unsignedContent()
++                    : Component.literal(chat.body().content())), false);
++        }
+         this.send(packet, (PacketSendListener) null);
+     }
+ 
+@@ -2211,6 +2219,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+                 // this.server.submit(() -> { // CraftBukkit - async chat
+                     PlayerChatMessage playerchatmessage;
+ 
++                    playerchatmessage = PlayerChatMessage.unsigned(player.getUUID(), packet.message());
++                    if (false)
+                     try {
+                         playerchatmessage = this.getSignedMessage(packet, (LastSeenMessages) optional.get());
+                     } catch (SignedMessageChain.DecodeException signedmessagechain_a) {
+@@ -2273,6 +2283,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+ 
+         Map map;
+ 
++        map = Collections.emptyMap();
++        if (false)
+         try {
+             map = (packet.command().equals(command)) ? this.collectSignedArguments(packet, SignableCommand.of(parseresults), lastSeenMessages) : Collections.emptyMap(); // CraftBukkit
+         } catch (SignedMessageChain.DecodeException signedmessagechain_a) {
+@@ -2707,6 +2719,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+     }
+ 
+     public void addPendingMessage(PlayerChatMessage message) {
++        if (true) return;
+         MessageSignature messagesignature = message.signature();
+ 
+         if (messagesignature != null) {
+-- 
+2.37.1 (Apple Git-137.1)
+

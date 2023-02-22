@@ -1,0 +1,23 @@
+From 8621b9fe8aace1dded79950845e600112aa7437a Mon Sep 17 00:00:00 2001
+From: Siggi <7286178+Siggi88@users.noreply.github.com>
+Date: Wed, 22 Feb 2023 20:54:53 +0000
+Subject: [PATCH] Send tick rate to SiggiPatch
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 710ca7d3a..7e5567a30 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1170,7 +1170,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                 this.nextTickTime += 50L;
+                 this.startMetricsRecordingTick();
+                 this.profiler.push("tick");
++                long startTick = System.nanoTime();
+                 this.tickServer(this::haveTime);
++                io.siggi.mcserverpatch.SiggiPatch.reportTickLength(startTick, System.nanoTime());
+                 this.profiler.popPush("nextTickWait");
+                 this.mayHaveDelayedTasks = true;
+                 this.delayedTasksMaxNextTickTime = Math.max(Util.getMillis() + 50L, this.nextTickTime);
+-- 
+2.37.1 (Apple Git-137.1)
+
